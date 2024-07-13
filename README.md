@@ -33,7 +33,7 @@ Article_Research_Tool is an advanced RAG application designed for efficient extr
 - Integrates FAISS for efficient vector storage and retrieval.
 
 #### 5. Open-Source Language Models:
-- Utilizes mixtral-8x7b-32768 open-source LLM for question answering and information retrieval, ensuring transparency and flexibility.
+- Utilizes llama3-8b-8192 open-source LLM for question answering and information retrieval, ensuring transparency and flexibility.
 
 ## Installation
 
@@ -92,5 +92,9 @@ streamlit run app.py
 ## Contribution
 Contributions are welcome! Please submit a pull request or open an issue to discuss any changes.
 
+#### Q&A on Articals
+![Alt text](DemoPhotos/pic2.png)
 
-![rag3](https://github.com/theshubh007/Article_Research_Tool_Based_on_OpenSouceLLMs/assets/100220928/76c52171-284f-4da2-b7d9-6a9512904104)
+![Alt text](DemoPhotos/pic1.png)
+
+
