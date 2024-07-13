@@ -17,7 +17,7 @@ load_dotenv()  # take environment variables from .env (especially openai api key
 
 groq_api_key = os.environ["GROQ_API_KEY"]
 
-st.title("News Research Tool")
+st.title("Artical Research Tool")
 st.sidebar.title("News Article URLs")
 
 urls = []
@@ -39,8 +39,8 @@ huggingface_embeddings = HuggingFaceEmbeddings(
 )
 
 
-# Initialize an instance of ChatGroq with the mitral model
-llm = ChatGroq(groq_api_key=groq_api_key, model_name="mixtral-8x7b-32768")
+# Initialize an instance of ChatGroq with the llama3-8b model
+llm = ChatGroq(groq_api_key=groq_api_key, model_name="llama3-8b-8192")
 
 if process_url_clicked:
 
@@ -91,6 +91,20 @@ if process_url_clicked:
 #############################################
 ##Question Answering Phase
 query = main_placeholder.text_input("Question: ")
+
+
+## To only perform similarity search
+# if query:
+#     vectorstore = FAISS.load_local(
+#         "faiss_store",
+#         embeddings=huggingface_embeddings,
+#         allow_dangerous_deserialization=True,
+#     )
+#     docs = vectorstore.similarity_search(query)
+#     st.header("Answer")
+#     st.write(docs[0].page_content)
+
+
 if query:
     vectorstore = FAISS.load_local(
         "faiss_store",
