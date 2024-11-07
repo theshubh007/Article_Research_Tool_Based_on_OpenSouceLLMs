@@ -20,6 +20,7 @@ load_dotenv()  # take environment variables from .env (especially openai api key
 
 groq_api_key = os.environ["GROQ_API_KEY"]
 
+<<<<<<< HEAD
 # st.title("Artical Research Tool")
 # st.sidebar.title("News Article URLs")
 
@@ -30,6 +31,10 @@ groq_api_key = os.environ["GROQ_API_KEY"]
 #     urls.append(url)
 
 # process_url_clicked = st.sidebar.button("Process URLs")
+=======
+st.title("The State of Food Security and Nutrition 2024")
+
+>>>>>>> 2795f3b80f8f905b1dfd49e4a18984df69cad056
 
 # main_placeholder = st.empty()
 
@@ -45,12 +50,22 @@ huggingface_embeddings = HuggingFaceEmbeddings(
 # Initialize an instance of ChatGroq with the llama3-8b model
 llm = ChatGroq(groq_api_key=groq_api_key, model_name="llama3-8b-8192")
 
+<<<<<<< HEAD
 # File upload for PDFs
 st.title("PDF Embedding Generator")
 uploaded_files = st.sidebar.file_uploader("Upload up to 3 PDF files", type="pdf", accept_multiple_files=True)
 
 process_pdf_clicked = st.sidebar.button("Process PDFs")
 main_placeholder = st.empty()
+=======
+
+
+def DataExtractingAndIndexing():
+
+    #################################################3
+    ##DataLoading Phase
+
+>>>>>>> 2795f3b80f8f905b1dfd49e4a18984df69cad056
 
 # Function to extract text from each PDF file
 def extract_text_from_pdf(uploaded_file):
