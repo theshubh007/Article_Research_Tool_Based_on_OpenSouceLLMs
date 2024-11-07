@@ -17,16 +17,8 @@ load_dotenv()  # take environment variables from .env (especially openai api key
 
 groq_api_key = os.environ["GROQ_API_KEY"]
 
-st.title("Artical Research Tool")
-st.sidebar.title("News Article URLs")
+st.title("The State of Food Security and Nutrition 2024")
 
-urls = []
-
-for i in range(3):
-    url = st.sidebar.text_input(f"URL {i+1}")
-    urls.append(url)
-
-process_url_clicked = st.sidebar.button("Process URLs")
 
 main_placeholder = st.empty()
 
@@ -42,12 +34,13 @@ huggingface_embeddings = HuggingFaceEmbeddings(
 # Initialize an instance of ChatGroq with the llama3-8b model
 llm = ChatGroq(groq_api_key=groq_api_key, model_name="llama3-8b-8192")
 
-if process_url_clicked:
+
+
+def DataExtractingAndIndexing():
 
     #################################################3
     ##DataLoading Phase
-    urls = [url for url in urls if url]
-    print("URLs are: ", urls)
+
 
     loader = WebBaseLoader(
         web_paths=urls,
