@@ -10,6 +10,9 @@ from langchain_community.document_loaders import WebBaseLoader
 from langchain_groq import ChatGroq
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from Datachunksplitter import DataChunkSplitter
+import fitz
+import numpy as np
+from langchain.schema import Document
 
 from dotenv import load_dotenv
 
@@ -17,18 +20,18 @@ load_dotenv()  # take environment variables from .env (especially openai api key
 
 groq_api_key = os.environ["GROQ_API_KEY"]
 
-st.title("Artical Research Tool")
-st.sidebar.title("News Article URLs")
+# st.title("Artical Research Tool")
+# st.sidebar.title("News Article URLs")
 
-urls = []
+# urls = []
 
-for i in range(3):
-    url = st.sidebar.text_input(f"URL {i+1}")
-    urls.append(url)
+# for i in range(3):
+#     url = st.sidebar.text_input(f"URL {i+1}")
+#     urls.append(url)
 
-process_url_clicked = st.sidebar.button("Process URLs")
+# process_url_clicked = st.sidebar.button("Process URLs")
 
-main_placeholder = st.empty()
+# main_placeholder = st.empty()
 
 
 # Initialize an instance of HuggingFaceEmbeddings with the specified parameters
@@ -42,49 +45,66 @@ huggingface_embeddings = HuggingFaceEmbeddings(
 # Initialize an instance of ChatGroq with the llama3-8b model
 llm = ChatGroq(groq_api_key=groq_api_key, model_name="llama3-8b-8192")
 
-if process_url_clicked:
+# File upload for PDFs
+st.title("PDF Embedding Generator")
+uploaded_files = st.sidebar.file_uploader("Upload up to 3 PDF files", type="pdf", accept_multiple_files=True)
 
-    #################################################3
-    ##DataLoading Phase
-    urls = [url for url in urls if url]
-    print("URLs are: ", urls)
+process_pdf_clicked = st.sidebar.button("Process PDFs")
+main_placeholder = st.empty()
 
-    loader = WebBaseLoader(
-        web_paths=urls,
-        ###Specify the classname for dynamic webpages
-        bs_kwargs=dict(
-            parse_only=bs4.SoupStrainer(class_=("group", "ArticleHeader-headline"))
-        ),
-    )
-    print(loader)
-    main_placeholder.text("Data Loading...Started...✅✅✅")
+# Function to extract text from each PDF file
+def extract_text_from_pdf(uploaded_file):
+    pdf_bytes = uploaded_file.read()
+    text = ""
+    with fitz.open(stream=pdf_bytes, filetype="pdf") as pdf:
+        for page_num in range(len(pdf)):
+            page = pdf[page_num]
+            text += page.get_text()
+    return text
 
-    data = loader.load()
+# Function to split text into smaller chunks
+def split_text_into_chunks(text, chunk_size=512):
+    words = text.split()
+    return [" ".join(words[i:i+chunk_size]) for i in range(0, len(words), chunk_size)]
 
-    print("Data object length is: ", len(data))
+if process_pdf_clicked:
+    if not uploaded_files:
+        st.warning("Please upload at least one PDF file to proceed.")
+    else:
+        #################################################
+        # Data Loading Phase
+        main_placeholder.text("Data Loading...Started...✅✅✅")
+        pdf_texts = [extract_text_from_pdf(file) for file in uploaded_files]
+        
+        #################################################
+        # Data Splitting Phase
+        main_placeholder.text("Text Splitter...Started...✅✅✅")
+        splitted_docs = []
+        for text in pdf_texts:
+            chunks = split_text_into_chunks(text)
+            # Convert each chunk into a Document object
+            splitted_docs.extend([Document(page_content=chunk) for chunk in chunks])
 
-    #################################################
-    ##DataSplitting Phase
-    main_placeholder.text("Text Splitter...Started...✅✅✅")
+        ##############################################
+        # VectorStore Phase
+        main_placeholder.text("Embedding Vector Building...Started...✅✅✅")
+        
+        # Extract page content from Document objects to embed
+        chunk_texts = [doc.page_content for doc in splitted_docs]
+        
+        # Generate embeddings
+        embeddings = huggingface_embeddings.embed_documents(chunk_texts)
+        
+        # Combine texts and embeddings as pairs
+        text_embeddings = list(zip(chunk_texts, embeddings))
+        
+        # Initialize FAISS index with text-embedding pairs
+        vectorstore_faiss = FAISS.from_embeddings(text_embeddings, huggingface_embeddings)
 
-    splitted_docs, sample_embedding = DataChunkSplitter().split_data_chunks(
-        data, huggingface_embeddings=huggingface_embeddings
-    )
-
-    ##############################################
-    ##VectorStore Phase
-    if not huggingface_embeddings:
-        raise ValueError("Embeddings are empty")
-    vectorstore_openai = FAISS.from_documents(splitted_docs, huggingface_embeddings)
-    print("dimention of faiss during storing", vectorstore_openai.index.d)
-
-    print("Vectorstore processing is done.")
-    main_placeholder.text("Embedding Vector Started Building...✅✅✅")
-    time.sleep(2)
-
-    # Save the FAISS index(is library which can be work as vector database of fetched articles)
-    vectorstore_openai.save_local("faiss_store")
-    print("Vectorstore is saved to file.")
+        # Save FAISS index to local storage
+        vectorstore_faiss.save_local("faiss_store")
+        main_placeholder.text("FAISS Vectorstore Saved Successfully!")
+        st.write("Embedding Vector Building Completed...✅✅✅")
 
 
 ##########################################33
